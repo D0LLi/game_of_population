@@ -15,13 +15,13 @@ clock = pg.time.Clock()
 
 
 next_blocks_stage = [[0 for _ in range(width_count)] for _ in range(height_count)]
-blocks_victim = [[random.choice([0, 0,0,0,0,0,0,0, 1]) for _ in range(width_count)] for _ in range(height_count)]
+blocks_victim = [[random.choice([0, 0,0,0,0,0,0,1]) for _ in range(width_count)] for _ in range(height_count)]
 children = [[0 for _ in range(width_count)] for _ in range(height_count)]
 parents = [[0 for _ in range(width_count)] for _ in range(height_count)]
 #parents2 = [[0 for _ in range(width_count)] for _ in range(height_count)]
 
 blocks = [[0 for _ in range(width_count)] for _ in range(height_count)]
-predators = [[random.choice([0, 0, 0, 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
+predators = [[random.choice([0, 0, 0, 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
 
 for i in range(len(blocks_victim)):
     for j in range(len(predators[0])):
@@ -115,7 +115,7 @@ class Predator:
         self.x, self.y = position
         for xs in range(self.x - 1, self.x + 2):
             for ys in range(self.y - 1, self.y + 2):
-                if field[ys][xs] == 1:
+                if field[ys][xs] == 1 and field[self.y][self.x] == 2:
                     neighbors += 1
         return neighbors - 1
 
@@ -123,10 +123,10 @@ class Predator:
         self.x, self.y = position
         variants_y = []
         variants_x = []
-        if self.get_neighbours(field, position) >= 1:
+        if self.get_neighbours(field, position) > 1:
             for xs in range(self.x - 1, self.x + 2):
                 for ys in range(self.y - 1, self.y + 2):
-                    if field[ys][xs] == 1:
+                    if field[ys][xs] == 1  and field[self.y][self.x] == 2:
                         variants_y.append(ys)
                         variants_x.append(xs)
                     else:
@@ -139,11 +139,11 @@ class Predator:
             self.age += 1
             return 0
 
-        if field[self.y][self.x] == 1:
-            return 1
-        elif field[self.y][self.x] == 0:
+        if field[self.y][self.x] == 0:
             return 0
-        elif field[self.y][self.x] == 2:
+        elif field[self.y][self.x] == 1:
+            return 1
+        else:
             return 2
 
 
@@ -203,10 +203,10 @@ while True:
             # else:
             #     parents[y_block][x_block] = 0
 
-            if parents[y_block][x_block] + children[y_block][x_block] > 0:
+            if parents[y_block][x_block] + children[y_block][x_block] >= 1:
                 next_blocks_stage[y_block][x_block] = 1
 
-            next_blocks_stage[y_block][x_block] = Predator(x_block, y_block).kill_other(parents, pos)
+            next_blocks_stage[y_block][x_block] = Predator(x_block, y_block).kill_other(next_blocks_stage, pos)
 
             if predators[y_block][x_block] == 2:
                 next_blocks_stage[y_block][x_block] = 2
