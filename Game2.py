@@ -1,12 +1,13 @@
 import copy
 import random
 import pygame as pg
+from random import randint
 
 
 width_count, height_count = 100, 70
 size = 10
 resolution = width, height = width_count * size + 1, height_count * size + 1
-FPS = 60
+FPS = 1
 
 
 screen = pg.display.set_mode(resolution)
@@ -14,10 +15,20 @@ clock = pg.time.Clock()
 
 
 next_blocks_stage = [[0 for _ in range(width_count)] for _ in range(height_count)]
-blocks = [[random.choice([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
+blocks_victim = [[random.choice([0, 1]) for _ in range(width_count)] for _ in range(height_count)]
 children = [[0 for _ in range(width_count)] for _ in range(height_count)]
 parents = [[0 for _ in range(width_count)] for _ in range(height_count)]
 #parents2 = [[0 for _ in range(width_count)] for _ in range(height_count)]
+
+blocks = [[0 for _ in range(width_count)] for _ in range(height_count)]
+predators = [[random.choice([0, 0, 0, 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
+
+for i in range(len(blocks_victim)):
+    for j in range(len(predators[0])):
+
+        blocks[i][j] = blocks_victim[i][j] + predators[i][j] if (blocks_victim[i][j] + predators[i][j] <= 2) else 0
+
+
 
 
 class Victim:
@@ -78,9 +89,9 @@ class Victim:
             self.alive = False
             return 0
 
-        elif neighbors == 8 or neighbors == 7:
-            self.alive = False
-            return 0
+        #elif neighbors == 8 or neighbors == 7:
+        #    self.alive = False
+        #    return 0
 
         elif self.age == 100:
             self.alive = False
@@ -91,21 +102,52 @@ class Victim:
             return 1
 
 
+class Predator:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.color = (30, 30, 30)
+        self.age = 0
 
-# class Predator:
-#     def __init__(self, x, y):
-#         self.x = x
-#         self.y = y
-#         self.color = (30, 30, 30)
-#
-#     def kill_other(self, field, position):
-#         self.x, self.y = position
-#
-#     def die_self(self, field, position):
-#         self.x, self.y = position
-#
+    def get_neighbours(self, field, position):
+        neighbors = 0
+
+        self.x, self.y = position
+        for xs in range(self.x - 1, self.x + 2):
+            for ys in range(self.y - 1, self.y + 2):
+                if field[ys][xs] == 1:
+                    neighbors += 1
+        return neighbors - 1
+
+    def kill_other(self, field, position):
+        self.x, self.y = position
+        variants_y = []
+        variants_x = []
+        if self.get_neighbours(field, position) >= 1:
+            for xs in range(self.x - 1, self.x + 2):
+                for ys in range(self.y - 1, self.y + 2):
+                    if field[ys][xs] == 1:
+                        variants_y.append(ys)
+                        variants_x.append(xs)
+                    else:
+                        continue
+
+
+        if len(variants_y) != 0:
+            choose_victim = random.randint(0, len(variants_y) - 1)
+            field[variants_y[choose_victim]][variants_x[choose_victim]] = 2
+            self.age += 1
+            return 0
+        else:
+            return 1
+
+
+
+
+
 
 def right_choice(x, y, field):
+
     for xs in range(x - 1, x + 2):
         for ys in range(y - 1, y + 2):
             if field[ys][xs] == 0:
@@ -116,7 +158,7 @@ def right_choice(x, y, field):
     else:
         return 0, 0
 
-
+cnt = 0
 while True:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -133,6 +175,9 @@ while True:
                 pg.draw.rect(screen, (1, 250, 1), (x_block * size + 2, y_block * size + 2, size - 2, size - 2))
             elif blocks[y_block][x_block] == 0:
                 pg.draw.rect(screen, (1, 1, 1), (x_block * size + 2, y_block * size + 2, size - 2, size - 2))
+
+            elif blocks[y_block][x_block] == 2:
+                pg.draw.rect(screen, (250, 1, 1), (x_block * size + 2, y_block * size + 2, size - 2, size - 2))
             pos = (x_block, y_block)
 
             #we need to form right coordinates
@@ -140,10 +185,9 @@ while True:
             dy, dx = right_choice(x_block, y_block, blocks)
             #print(dy, dx)
 
-            children[y_block - dy][x_block - dx] = Victim(x_block, y_block).reproduction(blocks, pos)
-            parents[y_block][x_block] = blocks[y_block][x_block]
-
-            # блок кода, который отвечает за генерацию смерти
+            parents[y_block][x_block] = blocks[y_block][x_block] if blocks[y_block][x_block] == 1 else 0
+            predators[y_block][x_block] = blocks[y_block][x_block] if blocks[y_block][x_block] == 2 else 0
+            children[y_block - dy][x_block - dx] = Victim(x_block, y_block).reproduction(parents, pos)
             # parents2 = parents
             #
             # parents2[y_block][x_block] = Victim(x_block, y_block).die(blocks, pos)
@@ -153,10 +197,14 @@ while True:
             # else:
             #     parents[y_block][x_block] = 0
 
-            if parents[y_block][x_block] + children[y_block][x_block] >= 1:
+            if parents[y_block][x_block] + children[y_block][x_block] > 0:
                 next_blocks_stage[y_block][x_block] = 1
-            else:
-                next_blocks_stage[y_block][x_block] = 0
+
+            next_blocks_stage[y_block][x_block] = Predator(x_block, y_block).kill_other(parents, pos)
+
+            if predators[y_block][x_block] == 2:
+                next_blocks_stage[y_block][x_block] = 2
+
 
     blocks = copy.deepcopy(next_blocks_stage)
 
