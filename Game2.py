@@ -15,7 +15,7 @@ clock = pg.time.Clock()
 
 
 next_blocks_stage = [[0 for _ in range(width_count)] for _ in range(height_count)]
-blocks_victim = [[random.choice([0, 1]) for _ in range(width_count)] for _ in range(height_count)]
+blocks_victim = [[random.choice([0, 0,0,0,0,0,0,0, 1]) for _ in range(width_count)] for _ in range(height_count)]
 children = [[0 for _ in range(width_count)] for _ in range(height_count)]
 parents = [[0 for _ in range(width_count)] for _ in range(height_count)]
 #parents2 = [[0 for _ in range(width_count)] for _ in range(height_count)]
@@ -138,8 +138,14 @@ class Predator:
             field[variants_y[choose_victim]][variants_x[choose_victim]] = 2
             self.age += 1
             return 0
-        else:
+
+        if field[self.y][self.x] == 1:
             return 1
+        elif field[self.y][self.x] == 0:
+            return 0
+        elif field[self.y][self.x] == 2:
+            return 2
+
 
 
 
