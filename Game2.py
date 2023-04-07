@@ -78,6 +78,8 @@ class Victim:
             if self.age > 100:
                 return 0
             return 1
+        else:
+            return 0
 
 
     def die(self, field, position):
