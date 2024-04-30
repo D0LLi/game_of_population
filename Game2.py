@@ -1,7 +1,7 @@
 import copy
-import random
 import pygame as pg
 from random import randint
+import secrets
 
 
 width_count, height_count = 100, 70
@@ -15,13 +15,13 @@ clock = pg.time.Clock()
 
 
 next_blocks_stage = [[0 for _ in range(width_count)] for _ in range(height_count)]
-blocks_victim = [[random.choice([0, 0,0,0,0,0,0,1]) for _ in range(width_count)] for _ in range(height_count)]
+blocks_victim = [[secrets.choice([0, 0,0,0,0,0,0,1]) for _ in range(width_count)] for _ in range(height_count)]
 children = [[0 for _ in range(width_count)] for _ in range(height_count)]
 parents = [[0 for _ in range(width_count)] for _ in range(height_count)]
 #parents2 = [[0 for _ in range(width_count)] for _ in range(height_count)]
 
 blocks = [[0 for _ in range(width_count)] for _ in range(height_count)]
-predators = [[random.choice([0, 0, 0, 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
+predators = [[secrets.choice([0, 0, 0, 2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) for _ in range(width_count)] for _ in range(height_count)]
 
 for i in range(len(blocks_victim)):
     for j in range(len(predators[0])):
@@ -136,7 +136,7 @@ class Predator:
 
 
         if len(variants_y) != 0:
-            choose_victim = random.randint(0, len(variants_y) - 1)
+            choose_victim = secrets.SystemRandom().randint(0, len(variants_y) - 1)
             field[variants_y[choose_victim]][variants_x[choose_victim]] = 2
             self.age += 1
             return 0
