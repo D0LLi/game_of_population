@@ -1,7 +1,7 @@
 import copy
 
 import pygame as pg
-from random import randint
+import secrets
 
 width_count, height_count = 120, 75
 size = 10
@@ -12,7 +12,7 @@ screen = pg.display.set_mode(resolution)
 clock = pg.time.Clock()
 
 next_blocks_stage = [[0 for l in range(width_count)] for j in range(height_count)]
-blocks = [[randint(0, 1) for l in range(width_count)] for j in range(height_count)]
+blocks = [[secrets.SystemRandom().randint(0, 1) for l in range(width_count)] for j in range(height_count)]
 
 
 def paint_block(field, pos):
